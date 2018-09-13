@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #container svg, #container canvas {
+    position: absolute;
+    top: 0;
+}
+    </style>
+    <meta charset="utf-8">
+    <title>D3 Map Example</title>
+</head>
+<body>
+<div id= "container">
+
+</div>
+<div id = "canvas">
+
+</div>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/topojson.v2.min.js"></script>
+<script src = "node_modules/simpleheat/simpleheat.js"></script>
+
+<script>
+ //Width and height
+	var w = 960;
+	var h = 600;
+div = d3.select("#container")
+mapLayer = div.append('svg')
+        .attr("id","map")
+        .attr("width",w)
+        .attr("height",h)
+
+canvasLayer = div.append('canvas').attr('id', 'heatmap').attr('width', w).attr('height', h);
+
+var canvas = canvasLayer.node(),
+    context = canvas.getContext("2d");
+
+
+	//Define map projection
+var projection = d3.geoMercator()
+		   .center([ -120, 37 ])
+		   .translate([ w/2, h/2 ])
+		   .scale([ 2600 ]);
+
+			//Define path generator
+var path = d3.geoPath()
+			 .projection(projection)
+var svg = d3.select("#container")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+// read data in
+d3.queue()
+.defer(d3.json,"ca.json")
+.defer(d3.csv, "heatCAN0.csv")
+.await(main)
+
+function main (err, ca, heatCAN0) {
+    console.log(heatCAN0)
+    mapLayer
+        .append('svg')
+        .selectAll("path")
+        .data(ca.features)
+        .enter()
+        .append("path")
+        .attr("d",path)
+        .attr("stroke","#000000")
+        .attr("fill","#ffffff")
+     //add heatmap   
+    simpleheat(canvas).data(heatCAN0.map(x=>[x.LON,x.LAT,x.cMort_90d])).radius(100,100).draw(0.05);
+
+    
+}
+
+/*
+    d3.json("ca.json", function(err, caGeo){
+        console.log(caGeo.features)
+        svg.selectAll("path")
+        .data(caGeo.features)
+        .enter()
+        .append("path")
+        .attr("d",path)
+        .attr("stroke","#000000")
+        .attr("fill","#ffffff")
+        .call(d3.zoom().on("zoom", function () {
+    svg.attr("transform", d3.event.transform)
+    }))
+    var heat = simpleheat(canvas);
+
+    })
+    */
+</script>
+</body>
+</html>
